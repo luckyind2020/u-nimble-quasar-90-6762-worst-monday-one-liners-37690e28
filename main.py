@@ -17,14 +17,25 @@ def entry_path() -> Path:
     return Path(__file__).resolve().parent / ENTRY_FILE
 
 
-def load_entry(path: Path) -> str:
-    """Read the line, strip surrounding whitespace, enforce the gate."""
-    line = path.read_text(encoding="utf-8").strip()
-    if not line:
+def validate_entry(line: str) -> str:
+    """Check a candidate line against the gate and return it stripped."""
+    cleaned = line.strip()
+    if not cleaned:
         raise ValueError("entry.txt is empty")
-    if len(line) > MAX_CHARS:
-        raise ValueError(f"entry is {len(line)} chars, gate is {MAX_CHARS}")
-    return line
+    if len(cleaned) > MAX_CHARS:
+        raise ValueError(f"entry is {len(cleaned)} chars, gate is {MAX_CHARS}")
+    return cleaned
+
+
+def load_entry(path: Path) -> str:
+    """Read the line and run it through the gate."""
+    raw = path.read_text(encoding="utf-8")
+    return validate_entry(raw)
+
+
+def render(line: str) -> str:
+    """Prepare the validated line for output, exactly one trailing newline."""
+    return line.rstrip("\n") + "\n"
 
 
 def main() -> int:
@@ -36,7 +47,7 @@ def main() -> int:
     except ValueError as exc:
         print(f"error: invalid entry — {exc}", flush=True)
         return 1
-    print(line)
+    print(render(line), end="")
     return 0
 
 
